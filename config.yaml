@@ -1,0 +1,18 @@
+hub:
+  service:
+    type: LoadBalancer
+  db:
+    type: sqlite-pvc
+    upgrade:
+    pvc:
+      annotations: {}
+      selector: {}
+      accessModes:
+        - ReadWriteOnce
+      storage: 1Gi
+      subPath:
+      storageClassName: px-csi-db
+singleuser:
+  storage:
+    dynamic:
+      storageClass: px-csi-replicated

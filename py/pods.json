@@ -1,0 +1,580 @@
+{
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+        "annotations": {
+            "cni.projectcalico.org/containerID": "d70af0c9711eba5e26534baa629161c918faedd2a02d310c63b96ec100f2b450",
+            "cni.projectcalico.org/podIP": "10.233.75.66/32",
+            "cni.projectcalico.org/podIPs": "10.233.75.66/32",
+            "kubectl.kubernetes.io/default-container": "prometheus"
+        },
+        "creationTimestamp": "2023-08-28T17:09:13Z",
+        "generateName": "prometheus-px-prometheus-",
+        "labels": {
+            "app.kubernetes.io/instance": "px-prometheus",
+            "app.kubernetes.io/managed-by": "prometheus-operator",
+            "app.kubernetes.io/name": "prometheus",
+            "app.kubernetes.io/version": "2.35.0",
+            "controller-revision-hash": "prometheus-px-prometheus-6bf58857c9",
+            "operator.prometheus.io/name": "px-prometheus",
+            "operator.prometheus.io/shard": "0",
+            "prometheus": "px-prometheus",
+            "statefulset.kubernetes.io/pod-name": "prometheus-px-prometheus-0"
+        },
+        "name": "prometheus-px-prometheus-0",
+        "namespace": "portworx",
+        "ownerReferences": [
+            {
+                "apiVersion": "apps/v1",
+                "blockOwnerDeletion": true,
+                "controller": true,
+                "kind": "StatefulSet",
+                "name": "prometheus-px-prometheus",
+                "uid": "effb547f-a927-4061-a3a1-150f27c87ef7"
+            }
+        ],
+        "resourceVersion": "17051",
+        "uid": "038af8c5-ba3b-4876-9ab2-9f289b574191"
+    },
+    "spec": {
+        "affinity": {
+            "nodeAffinity": {
+                "requiredDuringSchedulingIgnoredDuringExecution": {
+                    "nodeSelectorTerms": [
+                        {
+                            "matchExpressions": [
+                                {
+                                    "key": "px/enabled",
+                                    "operator": "NotIn",
+                                    "values": [
+                                        "false"
+                                    ]
+                                },
+                                {
+                                    "key": "node-role.kubernetes.io/master",
+                                    "operator": "DoesNotExist"
+                                },
+                                {
+                                    "key": "node-role.kubernetes.io/control-plane",
+                                    "operator": "DoesNotExist"
+                                }
+                            ]
+                        },
+                        {
+                            "matchExpressions": [
+                                {
+                                    "key": "px/enabled",
+                                    "operator": "NotIn",
+                                    "values": [
+                                        "false"
+                                    ]
+                                },
+                                {
+                                    "key": "node-role.kubernetes.io/master",
+                                    "operator": "Exists"
+                                },
+                                {
+                                    "key": "node-role.kubernetes.io/worker",
+                                    "operator": "Exists"
+                                }
+                            ]
+                        },
+                        {
+                            "matchExpressions": [
+                                {
+                                    "key": "px/enabled",
+                                    "operator": "NotIn",
+                                    "values": [
+                                        "false"
+                                    ]
+                                },
+                                {
+                                    "key": "node-role.kubernetes.io/control-plane",
+                                    "operator": "Exists"
+                                },
+                                {
+                                    "key": "node-role.kubernetes.io/worker",
+                                    "operator": "Exists"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        "automountServiceAccountToken": true,
+        "containers": [
+            {
+                "args": [
+                    "--web.console.templates=/etc/prometheus/consoles",
+                    "--web.console.libraries=/etc/prometheus/console_libraries",
+                    "--storage.tsdb.retention.time=24h",
+                    "--config.file=/etc/prometheus/config_out/prometheus.env.yaml",
+                    "--storage.tsdb.path=/prometheus",
+                    "--web.enable-lifecycle",
+                    "--web.route-prefix=/",
+                    "--log.level=debug",
+                    "--web.config.file=/etc/prometheus/web_config/web-config.yaml"
+                ],
+                "image": "quay.io/prometheus/prometheus:v2.35.0",
+                "imagePullPolicy": "IfNotPresent",
+                "livenessProbe": {
+                    "failureThreshold": 6,
+                    "httpGet": {
+                        "path": "/-/healthy",
+                        "port": "web",
+                        "scheme": "HTTP"
+                    },
+                    "periodSeconds": 5,
+                    "successThreshold": 1,
+                    "timeoutSeconds": 3
+                },
+                "name": "prometheus",
+                "ports": [
+                    {
+                        "containerPort": 9090,
+                        "name": "web",
+                        "protocol": "TCP"
+                    }
+                ],
+                "readinessProbe": {
+                    "failureThreshold": 3,
+                    "httpGet": {
+                        "path": "/-/ready",
+                        "port": "web",
+                        "scheme": "HTTP"
+                    },
+                    "periodSeconds": 5,
+                    "successThreshold": 1,
+                    "timeoutSeconds": 3
+                },
+                "resources": {
+                    "limits": {
+                        "cpu": "1",
+                        "ephemeral-storage": "5Gi"
+                    },
+                    "requests": {
+                        "cpu": "1",
+                        "ephemeral-storage": "5Gi",
+                        "memory": "400Mi"
+                    }
+                },
+                "securityContext": {
+                    "allowPrivilegeEscalation": false,
+                    "capabilities": {
+                        "drop": [
+                            "ALL"
+                        ]
+                    },
+                    "readOnlyRootFilesystem": true
+                },
+                "startupProbe": {
+                    "failureThreshold": 60,
+                    "httpGet": {
+                        "path": "/-/ready",
+                        "port": "web",
+                        "scheme": "HTTP"
+                    },
+                    "periodSeconds": 15,
+                    "successThreshold": 1,
+                    "timeoutSeconds": 3
+                },
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "FallbackToLogsOnError",
+                "volumeMounts": [
+                    {
+                        "mountPath": "/etc/prometheus/config_out",
+                        "name": "config-out",
+                        "readOnly": true
+                    },
+                    {
+                        "mountPath": "/etc/prometheus/certs",
+                        "name": "tls-assets",
+                        "readOnly": true
+                    },
+                    {
+                        "mountPath": "/prometheus",
+                        "name": "prometheus-px-prometheus-db"
+                    },
+                    {
+                        "mountPath": "/etc/prometheus/rules/prometheus-px-prometheus-rulefiles-0",
+                        "name": "prometheus-px-prometheus-rulefiles-0"
+                    },
+                    {
+                        "mountPath": "/etc/prometheus/web_config/web-config.yaml",
+                        "name": "web-config",
+                        "readOnly": true,
+                        "subPath": "web-config.yaml"
+                    },
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "kube-api-access-bnmzj",
+                        "readOnly": true
+                    }
+                ]
+            },
+            {
+                "args": [
+                    "--listen-address=:8080",
+                    "--reload-url=http://localhost:9090/-/reload",
+                    "--config-file=/etc/prometheus/config/prometheus.yaml.gz",
+                    "--config-envsubst-file=/etc/prometheus/config_out/prometheus.env.yaml",
+                    "--watched-dir=/etc/prometheus/rules/prometheus-px-prometheus-rulefiles-0",
+                    "--log-level=debug"
+                ],
+                "command": [
+                    "/bin/prometheus-config-reloader"
+                ],
+                "env": [
+                    {
+                        "name": "POD_NAME",
+                        "valueFrom": {
+                            "fieldRef": {
+                                "apiVersion": "v1",
+                                "fieldPath": "metadata.name"
+                            }
+                        }
+                    },
+                    {
+                        "name": "SHARD",
+                        "value": "0"
+                    }
+                ],
+                "image": "quay.io/prometheus-operator/prometheus-config-reloader:v0.56.3",
+                "imagePullPolicy": "IfNotPresent",
+                "name": "config-reloader",
+                "ports": [
+                    {
+                        "containerPort": 8080,
+                        "name": "reloader-web",
+                        "protocol": "TCP"
+                    }
+                ],
+                "resources": {
+                    "limits": {
+                        "cpu": "100m",
+                        "memory": "50Mi"
+                    },
+                    "requests": {
+                        "cpu": "100m",
+                        "memory": "50Mi"
+                    }
+                },
+                "securityContext": {
+                    "allowPrivilegeEscalation": false,
+                    "capabilities": {
+                        "drop": [
+                            "ALL"
+                        ]
+                    },
+                    "readOnlyRootFilesystem": true
+                },
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "FallbackToLogsOnError",
+                "volumeMounts": [
+                    {
+                        "mountPath": "/etc/prometheus/config",
+                        "name": "config"
+                    },
+                    {
+                        "mountPath": "/etc/prometheus/config_out",
+                        "name": "config-out"
+                    },
+                    {
+                        "mountPath": "/etc/prometheus/rules/prometheus-px-prometheus-rulefiles-0",
+                        "name": "prometheus-px-prometheus-rulefiles-0"
+                    },
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "kube-api-access-bnmzj",
+                        "readOnly": true
+                    }
+                ]
+            }
+        ],
+        "dnsPolicy": "ClusterFirst",
+        "enableServiceLinks": true,
+        "hostname": "prometheus-px-prometheus-0",
+        "initContainers": [
+            {
+                "args": [
+                    "--watch-interval=0",
+                    "--listen-address=:8080",
+                    "--config-file=/etc/prometheus/config/prometheus.yaml.gz",
+                    "--config-envsubst-file=/etc/prometheus/config_out/prometheus.env.yaml",
+                    "--watched-dir=/etc/prometheus/rules/prometheus-px-prometheus-rulefiles-0",
+                    "--log-level=debug"
+                ],
+                "command": [
+                    "/bin/prometheus-config-reloader"
+                ],
+                "env": [
+                    {
+                        "name": "POD_NAME",
+                        "valueFrom": {
+                            "fieldRef": {
+                                "apiVersion": "v1",
+                                "fieldPath": "metadata.name"
+                            }
+                        }
+                    },
+                    {
+                        "name": "SHARD",
+                        "value": "0"
+                    }
+                ],
+                "image": "quay.io/prometheus-operator/prometheus-config-reloader:v0.56.3",
+                "imagePullPolicy": "IfNotPresent",
+                "name": "init-config-reloader",
+                "ports": [
+                    {
+                        "containerPort": 8080,
+                        "name": "reloader-web",
+                        "protocol": "TCP"
+                    }
+                ],
+                "resources": {
+                    "limits": {
+                        "cpu": "100m",
+                        "memory": "50Mi"
+                    },
+                    "requests": {
+                        "cpu": "100m",
+                        "memory": "50Mi"
+                    }
+                },
+                "securityContext": {
+                    "allowPrivilegeEscalation": false,
+                    "capabilities": {
+                        "drop": [
+                            "ALL"
+                        ]
+                    },
+                    "readOnlyRootFilesystem": true
+                },
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "FallbackToLogsOnError",
+                "volumeMounts": [
+                    {
+                        "mountPath": "/etc/prometheus/config",
+                        "name": "config"
+                    },
+                    {
+                        "mountPath": "/etc/prometheus/config_out",
+                        "name": "config-out"
+                    },
+                    {
+                        "mountPath": "/etc/prometheus/rules/prometheus-px-prometheus-rulefiles-0",
+                        "name": "prometheus-px-prometheus-rulefiles-0"
+                    },
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "kube-api-access-bnmzj",
+                        "readOnly": true
+                    }
+                ]
+            }
+        ],
+        "nodeName": "px4fa2-9",
+        "preemptionPolicy": "PreemptLowerPriority",
+        "priority": 0,
+        "restartPolicy": "Always",
+        "schedulerName": "default-scheduler",
+        "securityContext": {
+            "fsGroup": 65534,
+            "runAsGroup": 65534,
+            "runAsNonRoot": true,
+            "runAsUser": 65534
+        },
+        "serviceAccount": "px-prometheus",
+        "serviceAccountName": "px-prometheus",
+        "subdomain": "prometheus-operated",
+        "terminationGracePeriodSeconds": 600,
+        "tolerations": [
+            {
+                "effect": "NoExecute",
+                "key": "node.kubernetes.io/not-ready",
+                "operator": "Exists",
+                "tolerationSeconds": 300
+            },
+            {
+                "effect": "NoExecute",
+                "key": "node.kubernetes.io/unreachable",
+                "operator": "Exists",
+                "tolerationSeconds": 300
+            }
+        ],
+        "volumes": [
+            {
+                "name": "config",
+                "secret": {
+                    "defaultMode": 420,
+                    "secretName": "prometheus-px-prometheus"
+                }
+            },
+            {
+                "name": "tls-assets",
+                "projected": {
+                    "defaultMode": 420,
+                    "sources": [
+                        {
+                            "secret": {
+                                "name": "prometheus-px-prometheus-tls-assets-0"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "emptyDir": {},
+                "name": "config-out"
+            },
+            {
+                "configMap": {
+                    "defaultMode": 420,
+                    "name": "prometheus-px-prometheus-rulefiles-0"
+                },
+                "name": "prometheus-px-prometheus-rulefiles-0"
+            },
+            {
+                "name": "web-config",
+                "secret": {
+                    "defaultMode": 420,
+                    "secretName": "prometheus-px-prometheus-web-config"
+                }
+            },
+            {
+                "emptyDir": {},
+                "name": "prometheus-px-prometheus-db"
+            },
+            {
+                "name": "kube-api-access-bnmzj",
+                "projected": {
+                    "defaultMode": 420,
+                    "sources": [
+                        {
+                            "serviceAccountToken": {
+                                "expirationSeconds": 3607,
+                                "path": "token"
+                            }
+                        },
+                        {
+                            "configMap": {
+                                "items": [
+                                    {
+                                        "key": "ca.crt",
+                                        "path": "ca.crt"
+                                    }
+                                ],
+                                "name": "kube-root-ca.crt"
+                            }
+                        },
+                        {
+                            "downwardAPI": {
+                                "items": [
+                                    {
+                                        "fieldRef": {
+                                            "apiVersion": "v1",
+                                            "fieldPath": "metadata.namespace"
+                                        },
+                                        "path": "namespace"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "status": {
+        "conditions": [
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2023-08-28T17:09:25Z",
+                "status": "True",
+                "type": "Initialized"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2023-08-28T17:09:43Z",
+                "status": "True",
+                "type": "Ready"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2023-08-28T17:09:43Z",
+                "status": "True",
+                "type": "ContainersReady"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2023-08-28T17:09:13Z",
+                "status": "True",
+                "type": "PodScheduled"
+            }
+        ],
+        "containerStatuses": [
+            {
+                "containerID": "containerd://a5266c5f02ab17f8a6f3f3132a05fd5f27fe40db66d80d4f22be2e5b3e74283d",
+                "image": "quay.io/prometheus-operator/prometheus-config-reloader:v0.56.3",
+                "imageID": "quay.io/prometheus-operator/prometheus-config-reloader@sha256:d0aee3f816725cb130121f3ea67979160bdc79fe616efa077c9b15cab4689504",
+                "lastState": {},
+                "name": "config-reloader",
+                "ready": true,
+                "restartCount": 0,
+                "started": true,
+                "state": {
+                    "running": {
+                        "startedAt": "2023-08-28T17:09:35Z"
+                    }
+                }
+            },
+            {
+                "containerID": "containerd://5072a6407dc73af14ed1aa46f16f6ceb6e8bbe7b8d40f0c9370be0cb44bd33ff",
+                "image": "quay.io/prometheus/prometheus:v2.35.0",
+                "imageID": "quay.io/prometheus/prometheus@sha256:2acfab1966f0dbecc6afbead13eca7f47062cfe8726bb9db25e39e0c0b88e9c3",
+                "lastState": {},
+                "name": "prometheus",
+                "ready": true,
+                "restartCount": 0,
+                "started": true,
+                "state": {
+                    "running": {
+                        "startedAt": "2023-08-28T17:09:34Z"
+                    }
+                }
+            }
+        ],
+        "hostIP": "10.21.100.219",
+        "initContainerStatuses": [
+            {
+                "containerID": "containerd://192b23a041ad26d0cc5e6f3bf4366839e20413cce201bb8b0d65ab08121cc2d1",
+                "image": "quay.io/prometheus-operator/prometheus-config-reloader:v0.56.3",
+                "imageID": "quay.io/prometheus-operator/prometheus-config-reloader@sha256:d0aee3f816725cb130121f3ea67979160bdc79fe616efa077c9b15cab4689504",
+                "lastState": {},
+                "name": "init-config-reloader",
+                "ready": true,
+                "restartCount": 0,
+                "state": {
+                    "terminated": {
+                        "containerID": "containerd://192b23a041ad26d0cc5e6f3bf4366839e20413cce201bb8b0d65ab08121cc2d1",
+                        "exitCode": 0,
+                        "finishedAt": "2023-08-28T17:09:25Z",
+                        "reason": "Completed",
+                        "startedAt": "2023-08-28T17:09:25Z"
+                    }
+                }
+            }
+        ],
+        "phase": "Running",
+        "podIP": "10.233.75.66",
+        "podIPs": [
+            {
+                "ip": "10.233.75.66"
+            }
+        ],
+        "qosClass": "Burstable",
+        "startTime": "2023-08-28T17:09:13Z"
+    }
+}
